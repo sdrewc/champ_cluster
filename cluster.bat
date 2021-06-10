@@ -1,6 +1,6 @@
 @echo off
 
-python Y:\champ\util\bin\cluster.py %1
+python cluster.py %1
 if ERRORLEVEL 2 goto :error
 
 goto :done
