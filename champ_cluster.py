@@ -1,20 +1,20 @@
 """  
 
-  http://github.com/sfcta/cluster
+  http://github.com/sfcta/champ_cluster
 
-  Cluster, Copyright 2014 San Francisco County Transportation Authority
+  Champ_cluster, Copyright 2014 San Francisco County Transportation Authority
                             San Francisco, CA, USA
                             http://www.sfcta.org/
                             info@sfcta.org
 
-  This file is part of cluster.
+  This file is part of cube_cluster.
 
-  Cluster is free software: you can redistribute it and/or modify
+  Champ_cluster is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Cluster is distributed in the hope that it will be useful,
+  Champ_cluster is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -24,7 +24,6 @@
   
 """
 
-from __future__ import with_statement
 import os,sys,re,subprocess,time
 
 # regex expression for expanding env variables
@@ -33,7 +32,7 @@ def expander(mo):
     return os.environ.get(mo.group()[1:-1], mo.group()[1:-1])
 
 def exceptcatcher(type,value,traceback):
-    print "\nHalted."
+    print("\nHalted.")
 
 # Write final cluster cmds to bottom of script file
 def writescript(numcmds,scripts):
@@ -66,7 +65,7 @@ def parseline(line, script, numcmds, COMMPATH, mynodenum):
             
     # write multistep header (using COMMPATH) if no other scripts yet
     if numscripts == 0:
-        scripts[mynodenum] += "DistributeMultistep ProcessID=\"CHAMP\",ProcessNum=%d, CommPath='%s'\n" % (mynodenum, COMMPATH)
+        scripts[mynodenum] += "DistributeMultistep ProcessID=\"CHAMP\",ProcessNum={:d}, CommPath='{:s}'\n".format(mynodenum, COMMPATH)
 
     # read/output file contents
     scripts[mynodenum] += "\n; **DISPATCHER: reading "+line+"\n"
@@ -78,8 +77,8 @@ def parseline(line, script, numcmds, COMMPATH, mynodenum):
             	cmd = re_env.sub(expander, cmd)
                 scripts[mynodenum] += cmd
     except:
-        print "ERROR: couldn't read",line
-        raw_input("\n*** PRESS CTRL-C to quit. ***")
+        print("ERROR: couldn't read",line)
+        input("\n*** PRESS CTRL-C to quit. ***")
 
     # don't output multistep footer -- we'll do this later
     return
@@ -96,10 +95,10 @@ def callcluster(numcmds,jset="",grouped_jset=False):
         num_nodes += 1 if (len(numcmds[nodenum]) > 0) else 0
         num_scripts += len(numcmds[nodenum])
         
-    print time.asctime()+":  Calling cluster with %d %scommands (%s each) on %d nodes" % \
-        (num_scripts, "grouped " if grouped_jset else "",
-         "%d - %d" % (min_cmds, max_cmds) if min_cmds != max_cmds else "%d" % min_cmds, 
-         num_nodes)
+    print(time.asctime()+":  Calling cluster with {:d} {} commands ({} each) on {:d} nodes".format(
+         num_scripts, "grouped " if grouped_jset else "",
+         "{:d} - {:d}".format(min_cmds, max_cmds) if min_cmds != max_cmds else "{:d}".format(min_cmds), 
+         num_nodes))
     rtncode = 11
 
     outlog = open('clusterscript.log','a')
@@ -109,7 +108,7 @@ def callcluster(numcmds,jset="",grouped_jset=False):
     try:
         rtncode = subprocess.call(["runtpp.exe",'clusterscript.s'], stdout=outlog, stderr=outlog, shell=True)
     except:
-        print "Couldn't spawn runtpp.exe; is it installed?"
+        print("Couldn't spawn runtpp.exe; is it installed?")
     
     outlog.write('\n--------------- DONE  '+time.asctime()+' == '+jset+'\n')
     outlog.flush()
@@ -117,10 +116,10 @@ def callcluster(numcmds,jset="",grouped_jset=False):
 
     # Check TPP errorcode:  2 and above means fatal error
     if (rtncode >= 2):
-        print "ERROR: Returned error code",rtncode
-        raw_input("\n*** PRESS CTRL-C to quit. ***")
+        print("ERROR: Returned error code",rtncode)
+        input("\n*** PRESS CTRL-C to quit. ***")
 
-    print time.asctime()+":  Done.  "
+    print(time.asctime()+":  Done.  ")
     return
 
 # ------------------------------------------------------------
@@ -137,7 +136,7 @@ if (__name__ == "__main__"):
 
     # open jset file from cmdline
     jset = re_env.sub(expander, sys.argv[1])
-    print   "\n------- Reading",jset,"--------"
+    print("\n------- Reading",jset,"--------")
     
     # will map nodenum -> [ list of script names ]
     grouped_jset = False
